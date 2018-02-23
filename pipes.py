@@ -2,6 +2,11 @@
 
 import random
 
+# Play with these parameters for different results
+lengths = 10000
+wrap = 20
+wiggliness = 0.3
+
 # 1 = Bottom -Y
 # 2 = Top    +Y
 # 3 = Left   -X
@@ -25,14 +30,9 @@ position = (0, 0, 0)
 
 entering_face = 3
 
-lengths = 1000
 
-minX = 0
-maxX = 0
-minY = 0
-maxY = 0
-minZ = 0
-maxZ = 0
+minCoord = [0, 0, 0]
+maxCoord = [0, 0, 0]
 
 print("""
 #include "pipes.inc"
@@ -56,19 +56,28 @@ light_source {
 union {
 """)
 
+
+
 while lengths > 0:
-    leaving_face = random.sample(set(range(1,7)) ^ { entering_face }, 1)[0]
+    if random.random() < wiggliness:
+        leaving_face = random.sample(set(range(1,7)) ^ { entering_face }, 1)[0]
+    else:
+        leaving_face = leaving_to_entering[entering_face]
+
     print("    object {{ Connect_{0}{1} translate <{2}, {3}, {4}> }}"
             .format(entering_face, leaving_face, position[0], position[1], position[2]))
 
     position = [ p + d for p,d in zip(position, exit_face_delta[leaving_face]) ]
 
-    minX = min(position[0], minX)
-    maxX = max(position[0], maxX)
-    minY = min(position[1], minY)
-    maxY = max(position[1], maxY)
-    minZ = min(position[2], minZ)
-    maxZ = max(position[2], maxZ)
+    for d in (0,1,2):
+        if wrap != None:
+            if position[d] < -wrap:
+                position[d] = wrap
+            if position[d] > wrap:
+                position[d] = -wrap
+
+        minCoord[d] = min(position[d], minCoord[d])
+        maxCoord[d] = max(position[d], maxCoord[d])
 
     entering_face = leaving_to_entering[leaving_face]
     lengths -= 1
@@ -91,8 +100,14 @@ print("""
 }
 """)
 
-cameraX = (minX + maxX) / 2.0
-cameraY = (minY + maxY) / 2.0
+if wrap is None:
+    cameraX = (minX + maxX) / 2.0
+    cameraY = (minY + maxY) / 2.0
+    cameraZ = minZ - 10
+else:
+    cameraX = 0
+    cameraY = 0
+    cameraZ = -wrap
 
 print("camera {{ location <{0}, {1}, {2}> look_at <{0}, {1}, {3}> }}"
-        .format(cameraX, cameraY, minZ-10, 0))
+        .format(cameraX, cameraY, cameraZ, 0))
