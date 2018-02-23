@@ -3,7 +3,7 @@
 import random
 
 # Play with these parameters for different results
-lengths = 10000
+lengths = 5000
 wrap = 20
 wiggliness = 0.3
 
@@ -89,7 +89,6 @@ print("""
     finish {
         ambient 0.1
         diffuse 0.7
-        crand 0.01
         reflection { 0.01, 0.05 }
         specular 1
         metallic
@@ -104,10 +103,15 @@ if wrap is None:
     cameraX = (minX + maxX) / 2.0
     cameraY = (minY + maxY) / 2.0
     cameraZ = minZ - 10
+    depth = maxz - minz
 else:
     cameraX = 0
     cameraY = 0
     cameraZ = -wrap
+    depth = wrap
 
 print("camera {{ location <{0}, {1}, {2}> look_at <{0}, {1}, {3}> }}"
         .format(cameraX, cameraY, cameraZ, 0))
+
+print("fog {{ distance {0} color rgbf <0.8, 0.8, 0.8, 1.0> }}"
+        .format(depth))
