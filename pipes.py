@@ -52,21 +52,21 @@ def generate_povray(segments):
 #include "pipes.inc"
 #include "colors.inc"
 
-background { color rgb <0.9, 0.9, 0.9> }
 light_source {
-    <-100, 100, -30>
-    color White
-}
-
-light_source {
-    <100, 100, 30>
+    <1000, 1000, 300>
     color Red
 }
 
 light_source {
-    <100, -100, -100>
+    <1000, -1000, -1000>
     color Blue
 }
+
+light_source {
+    <-1000, -1000, -1000>
+    color Green
+}
+
 union {
 """
     objects = "\n".join([ str(seg) for seg in segments ])
@@ -77,8 +77,8 @@ union {
     }
     finish {
         ambient 0.1
-        diffuse 0.7
-        specular 1
+        diffuse 0.9
+        specular 1.0
     }
 
     rotate 15 * z
@@ -123,7 +123,7 @@ def build(length, wiggliness, wrap):
         segments.append(Segment(entering_face, leaving_face, position))
 
         for d in (0,1,2):
-            minCoord[d], min(position[d], minCoord[d])
+            minCoord[d] = min(position[d], minCoord[d])
             maxCoord[d] = max(position[d], maxCoord[d])
 
         entering_face = leaving_to_entering[leaving_face]
@@ -144,6 +144,8 @@ def main(length, wiggliness, wrap):
 
     print("camera {{ location <{0}, {1}, {2}> look_at <{0}, {1}, {3}> }}"
             .format(cameraX, cameraY, cameraZ, 0))
+
+    print("box {{ {0} {1} pigment {{ rgbt 1 }} hollow interior {{ media {{ scattering {{1, 0.01}} samples 20 }} }} }}".format(minCoord, maxCoord))
 
     print(generate_povray(segments))
 
